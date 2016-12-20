@@ -1,2 +1,2 @@
 # pt-cache
-a framework for operate browser storage
+a shim for operate browser storage

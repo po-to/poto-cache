@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "module": "amd",
+        "moduleResolution" : "node",
+        "strictNullChecks" : true,
+        "removeComments" : true,
+        "target": "es5",
+        "lib": ["dom","es5","es2015.core","es2015.promise"],
+        "declaration":true
+    }
+}
