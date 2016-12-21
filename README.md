@@ -101,7 +101,9 @@ a shim library for operate browser storage
 用户可自由引入第三方库，如jquery的$.ajax来封装实现以上接口，实现之后调用：ptcache.setConfig({request:requestFunction})，requestFunction就是你实现IRequest接口的外部请求方法
 
 ## 举例说明
+
 >写入一笔cache，如：ptcache.setItem("list",new ptcache.CacheContent([...]))
+
 ```
 /*
 @param key:string 为cache的key
@@ -145,7 +147,10 @@ class CacheContent {
     constructor(data?: any, dataType?: string, expired?: string, version?: string, encryption?: boolean);
 }
 ```
+
 > 读取一笔cache，如var result = ptcache.getItem("list");
+
+
 ```
 /*
 @param key: string 要获取的缓存key
@@ -162,6 +167,7 @@ class CacheContent {
 */
 function getItem(key: string, type?: CacheType): CacheResult | null;
 ```
+
 > 更新一笔cache，如ptcache.setItem("list",new ptcache.CacheContent(null,null,100))
 
 本库不直接提供更新一笔cache的方法，用户可直接调用setItem重设即可；
@@ -169,6 +175,7 @@ function getItem(key: string, type?: CacheType): CacheResult | null;
 如 ptcache.setItem("list",new ptcache.CacheContent(null,null,100))，就表示将key为"list"的这笔cache往后增加100秒有效期
 
 > 删除一笔cache，如ptcache.removeItem("list");
+
 ```
 /*
     @param key: string 要删除的缓存key
@@ -178,6 +185,8 @@ function removeItem(key: string, type?: CacheType): void;
 ```
 
 > 清空所有cache，如ptcache.clear(1);
+
+
 ```
 /*
     @param type?: CacheType 要清空何种缓存池，不传为清空所有三种缓存
@@ -186,6 +195,7 @@ function clear(type?: CacheType): void;
 ```
 
 > 与外部请求相结合，如ptcache.load({url:"xxx"}).then(function(data){...});
+
 ```
 /*
     @param requestOptions: IRequestOptions 发起外部请求的数据，该数据将传入第三方外部请求实现API:IRequest，进行外部请求
@@ -210,7 +220,7 @@ function load(requestOptions: IRequestOptions, succss?: (data: any) => void, fai
 注意：ptcache.load方法封装了ptcache.getItem方法，在发起外部请求之前，会查询缓存中是否存在以url为key的缓存，如果存在，则进一步验证version的有效性。如果验证有效，则不发起真实的外部请求，而返回cache值
 所以回调函数中接受的data: any，是最终的值，而非CacheResult实例对象。
 
-> config配置
+> config配置，如ptcache.setConfig({namespace:"$#@"}})
 
 ```
 function setConfig(options: {
@@ -232,3 +242,7 @@ function setConfig(options: {
     request?: IRequest
 }): void;
 ```
+
+> 外部请求推荐风格，仅推荐并不一定要求这样设计
+
+由server端输出一个自定义的responseHeader X-Cache,值为S,3600s,Wed Dec 21 2016 17:25:57，表示要将该数据放入sessionStorage中缓存，缓存有效期是3600秒，版本识别号为Wed Dec 21 2016 17:25:57，缓存到期后将version:Wed Dec 21 2016 17:25:57发送回server进行验证，如果无需更新，server可返回304,(Not Modified),并重新给该缓存增加有效期
