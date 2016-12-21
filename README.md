@@ -159,8 +159,9 @@ a shim library for operate browser storage
 ## API说明
 
 
-> 写入一笔cache，如：ptcache.setItem("list",new ptcache.CacheContent([...]))
+### 写入一笔cache
 
+> 如：ptcache.setItem("list",new ptcache.CacheContent([...]))
 
 ```
 /*
@@ -206,8 +207,9 @@ class CacheContent {
 }
 ```
 
-> 读取一笔cache，如var result = ptcache.getItem("list");
+### 读取一笔cache
 
+> 如：var result = ptcache.getItem("list");
 
 ```
 /*
@@ -226,16 +228,18 @@ class CacheContent {
 function getItem(key: string, type?: CacheType): CacheResult | null;
 ```
 
-> 更新一笔cache，如ptcache.setItem("list",new ptcache.CacheContent(null,null,100))
+### 更新一笔cache
 
+> 如：ptcache.setItem("list",new ptcache.CacheContent(null,null,100))
 
 本库不直接提供更新一笔cache的方法，用户可直接调用setItem重设即可；
 如果需要更新的仅仅是过期时间或是版本标识，不需要更新内容，在调用setItem方法的时候，new ptcache.CacheContent(data,dataType,expired,version,encryption),其中data,dataType传入null值即可；
 如 ptcache.setItem("list",new ptcache.CacheContent(null,null,100))，就表示将key为"list"的这笔cache往后增加100秒有效期
 
 
-> 删除一笔cache，如ptcache.removeItem("list");
+### 删除一笔cache
 
+> 如：ptcache.removeItem("list");
 
 ```
 /*
@@ -245,8 +249,9 @@ function getItem(key: string, type?: CacheType): CacheResult | null;
 function removeItem(key: string, type?: CacheType): void;
 ```
 
-> 清空所有cache，如ptcache.clear(1);
+### 清空所有cache
 
+> 如：ptcache.clear(1);
 
 ```
 /*
@@ -255,8 +260,9 @@ function removeItem(key: string, type?: CacheType): void;
 function clear(type?: CacheType): void;
 ```
 
-> 与外部请求相结合，如ptcache.load({url:"xxx"}).then(function(data){...});
+### 与外部请求相结合
 
+> 如：ptcache.load({url:"xxx"}).then(function(data){...});
 
 ```
 /*
@@ -285,8 +291,9 @@ function load(requestOptions: IRequestOptions, succss?: (data: any) => void, fai
 外部请求，可由server端输出一个自定义的responseHeader X-Cache,值为S,3600s,Wed Dec 21 2016 17:25:57，表示要将该数据放入sessionStorage中缓存，缓存有效期是3600秒，版本识别号为Wed Dec 21 2016 17:25:57，缓存到期后将version:Wed Dec 21 2016 17:25:57发送回server进行验证，如果无需更新，server可返回304,(Not Modified),并重新给该缓存增加有效期
 
 
-> config配置，如ptcache.setConfig({namespace:"$#@"}})
+### config配置
 
+> 如：ptcache.setConfig({namespace:"$#@"}})
 
 ```
 function setConfig(options: {
@@ -309,7 +316,9 @@ function setConfig(options: {
 }): void;
 ```
 
-> 缓存空间的回收与溢出处理
+### 缓存空间的回收与溢出处理
+
+> 内部自动执行
 
 设置一笔缓存时，sessionStorage和localStorage在写满溢出时会抛出一个错误，本库会捕获这个错误，之后会采取回收策略  
 memoryStorage不会产生溢出错误，可自行设置一个存储上限值（本库会将所有写入memoryStorage的每笔cache的key，value长度求和，作为占用空间值），超过这个值后，本库会采取回收策略  
