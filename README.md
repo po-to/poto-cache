@@ -81,7 +81,7 @@ a shim library for operate browser storage
 
 - 本库并不限制自定义缓存头的具体实现，如借用http协议自定义头X-Cache等，仅提供接口：
 ```
-    interface RequestResult {
+    interface IRequestResult {
         cache?: { type?: CacheType, expired?: string, version?: string, encryption?: boolean },
         notModified?: boolean,
         dataType: string,
@@ -101,15 +101,65 @@ a shim library for operate browser storage
     }
 
     interface IRequest{
-        (request: IRequestOptions,success:(data:RequestResult)=>void,fail:(error:Error)=>void) : void;
+        (request: IRequestOptions,success:(data:IRequestResult)=>void,fail:(error:Error)=>void) : void;
     }
+
+    //用户可自由引入第三方库，如jquery的$.ajax来封装实现以上接口，假设requestFunction就是你实现IRequest接口的外部请求方法，
+    //调用：ptcache.setConfig({request:requestFunction})来配置使用
 ```  
-用户可自由引入第三方库，如jquery的$.ajax来封装实现以上接口，实现之后调用：ptcache.setConfig({request:requestFunction})，requestFunction就是你实现IRequest接口的外部请求方法
-
-## 举例说明
 
 
->写入一笔cache，如：ptcache.setItem("list",new ptcache.CacheContent([...]))
+- 本库并不提供对缓存写入的字符加密解密的具体实现，仅提供接口：
+```
+    interface IEncryption {
+        encrypt: (value: string) => string;
+        decrypt: (code: string) => string;
+    }
+    //用户可自由引入第三方库，如：goolge的CryptoJS.AES，假设myEncryption就是你实现IEncryption接口的方法
+    /*
+        ptcache.setConfig(encryption:{
+            encode : function(str){
+                var key = 'dsfsdfsdfe';//key可由服务端生成
+                var iv = key.substr(0,16);
+                key = CryptoJS.enc.Utf8.parse(key);
+                iv = CryptoJS.enc.Utf8.parse(iv);
+                str = CryptoJS.AES.encrypt(str,key,{iv:iv,padding:CryptoJS.pad.ZeroPadding});
+                return str.ciphertext.toString(CryptoJS.enc.Base64);
+            },
+            decode : function(str){
+                var key = 'dsfsdfsdfe';//key可由服务端生成
+                var iv = key.substr(0,16);
+                key = CryptoJS.enc.Utf8.parse(key);
+                iv = CryptoJS.enc.Utf8.parse(iv);
+                str = CryptoJS.AES.decrypt(str,key,{iv:iv,padding:CryptoJS.pad.ZeroPadding});
+                return CryptoJS.enc.Utf8.stringify(str);
+            }
+        })
+    */
+```
+
+- 本库仅提供一种序列化对象进行存储的序列化器：json，如果你需要别的序列化器，请实现接口：
+```
+    interface ISerialization {
+        decode: (str: string) => any;
+        encode: (data: any) => string;
+    }
+    /*
+    比如，你想在缓存中存入xml对象，请调用：ptcache.setConfig({
+        serializations:{
+            xml : {
+                decode: (str: string) => xml //具体请自行实现
+                encode: (data: xml) => string //具体请自行实现
+            }
+        }
+    })
+    */
+```
+
+## API说明
+
+
+> 写入一笔cache，如：ptcache.setItem("list",new ptcache.CacheContent([...]))
 
 
 ```
@@ -232,6 +282,8 @@ function load(requestOptions: IRequestOptions, succss?: (data: any) => void, fai
 注意：ptcache.load方法封装了ptcache.getItem方法，在发起外部请求之前，会查询缓存中是否存在以url为key的缓存，如果存在，则进一步验证version的有效性。如果验证有效，则不发起真实的外部请求，而返回cache值
 所以回调函数中接受的data: any，是最终的值，而非CacheResult实例对象。
 
+外部请求，可由server端输出一个自定义的responseHeader X-Cache,值为S,3600s,Wed Dec 21 2016 17:25:57，表示要将该数据放入sessionStorage中缓存，缓存有效期是3600秒，版本识别号为Wed Dec 21 2016 17:25:57，缓存到期后将version:Wed Dec 21 2016 17:25:57发送回server进行验证，如果无需更新，server可返回304,(Not Modified),并重新给该缓存增加有效期
+
 
 > config配置，如ptcache.setConfig({namespace:"$#@"}})
 
@@ -257,7 +309,5 @@ function setConfig(options: {
 }): void;
 ```
 
-> 外部请求推荐风格，仅推荐并不一定要求这样设计
 
 
-由server端输出一个自定义的responseHeader X-Cache,值为S,3600s,Wed Dec 21 2016 17:25:57，表示要将该数据放入sessionStorage中缓存，缓存有效期是3600秒，版本识别号为Wed Dec 21 2016 17:25:57，缓存到期后将version:Wed Dec 21 2016 17:25:57发送回server进行验证，如果无需更新，server可返回304,(Not Modified),并重新给该缓存增加有效期

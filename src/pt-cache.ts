@@ -512,11 +512,11 @@ export interface IRequestOptions {
 }
 
 export interface IRequest{
-    (request: IRequestOptions,success:(data:RequestResult)=>void,fail:(error:Error)=>void) : void;
+    (request: IRequestOptions,success:(data:IRequestResult)=>void,fail:(error:Error)=>void) : void;
 }
 let request: IRequest = function(request,success,fail){};
 
-export interface RequestResult {
+export interface IRequestResult {
     cache?: { type?: CacheType, expired?: string, version?: string, encryption?: boolean },
     notModified?: boolean,
     dataType: string,
@@ -542,7 +542,7 @@ export function load (requestOptions: IRequestOptions, succss?: (data:any) => vo
             if (cacheResult && cacheResult.version) {
                 requestOptions.version = cacheResult.version;
             }
-            request(requestOptions,function (requestResult:RequestResult) {
+            request(requestOptions,function (requestResult:IRequestResult) {
                 let data: any | undefined, dataType: string | undefined, type: CacheType | undefined, expired: string | undefined, version: string | undefined, encryption: boolean | undefined;
                 let cacheData = requestResult.cache;
                 let result: any;
