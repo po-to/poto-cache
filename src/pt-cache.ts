@@ -31,7 +31,7 @@ interface CacheObject {
     value: string;
     version: string;
 }
-export interface Serialization {
+export interface ISerialization {
     /**
      * 序列化解码´.
      * @param str 已编码字符串
@@ -61,7 +61,7 @@ export class CacheResult {
     }
 }
 export function parseContent(contentType: string, content: string): any {
-    let serialization: Serialization | null = config.serializations[contentType];
+    let serialization: ISerialization | null = config.serializations[contentType];
     return serialization ? serialization.decode(content) : content;
 }
 export class CacheContent {
@@ -75,7 +75,7 @@ export class CacheContent {
             if (typeof (this.data) == 'string') {
                 this._str = dataType + "," + this.data;
             } else {
-                let serialization: Serialization | null = config.serializations[dataType];
+                let serialization: ISerialization | null = config.serializations[dataType];
                 this._str = dataType + "," + (serialization ? serialization.encode(this.data) : this.data.toString());
             }
         }
@@ -432,7 +432,7 @@ export function setConfig(options: {
     namespace?: string, 
     encryption?: IEncryption, 
     mappingKey?: (key: string) => string, 
-    serializations?:{string:Serialization},
+    serializations?:{string:ISerialization},
     request?: IRequest,
 }): void {
     if (options.namespace) {

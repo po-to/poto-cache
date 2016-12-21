@@ -104,15 +104,15 @@ a shim library for operate browser storage
 >写入一笔cache，如：ptcache.setItem("list",new ptcache.CacheContent([...]))
 ```
 /*
-    @param key:string 为cache的key
-    @param content: CacheContent 为cache的值，稍后会详细说明
-    @param type?: CacheType 为cache类型，取值为0,1,2 ，默认为0，即内存型
-        enum CacheType {
-            Ram = 0, 内存型
-            Session = 1, //会话型
-            Local = 2, //持久型
-        }
-    @return boolean 是否创建成功
+@param key:string 为cache的key
+@param content: CacheContent 为cache的值，稍后会详细说明
+@param type?: CacheType 为cache类型，取值为0,1,2 ，默认为0，即内存型
+    enum CacheType {
+        Ram = 0, 内存型
+        Session = 1, //会话型
+        Local = 2, //持久型
+    }
+@return boolean 是否创建成功
 */
 function setItem(key: string, content: CacheContent, type?: CacheType): boolean;
 ```
@@ -120,45 +120,115 @@ ptcache.CacheContent是本库的一个类，写入缓存的数据必须用这个
 ```
 class CacheContent {
     /*
-        @param data?: any 为要写入cache的值
-        @param dataType?: string 为data值的类型，由于sessionStorage和localStorage只能存储文本，当data值不为文本时，本库将根据此dataType来序列化和反序列化，此默认值为"json"
-        @param expired?: string 为cache的过期时间
-            如果expired为一个数字描述，代表相对时间：
-                expired > 0 表示expired秒之后过期
-                expired = 0 表示立即过期，等于写入缓存无效
-                expired < 0 表示永不过期，除非缓存类型大生命周期结束
-            如果expired为一个标准的日期描述，即可以用JS内置的new Date(expired)转化为时间，则表示到了expired时间后过期
-        @param version?: string 为需要的版本验证，类似于http协议中的ETag。
-            如果一笔cache在有效期内，将直接命中并返回该笔cache
-            如果一笔cache已经失效：
-                如果这笔cache无version描述，则表示命中失败，取出来的cache为null
-                如果这笔cache有version描述，则表示该笔cache需要重新通过版本进行验证，验证结果有可能是not modified或是失效
-        @param encryption?: boolean 是否需要加密存储，如果为true，本库将调用Encryption.encrypt()或decrypt()方法加、解密之后再储存。
-            本库不直接提供加解密的实现，但提供接口：
-            interface IEncryption {
-                encrypt: (value: string) => string;
-                decrypt: (code: string) => string;
-            }
-            用户可自行引用第三方加解密库，如：google的CryptoJS，使用案例中有演示。
-            使用此参数前，用户需要先调用setConfig({encryption:myEncryption})设置加解密方法
+    @param data?: any 为要写入cache的值，如果data为null或是undefined，表示不写入data，即表示更新某cache
+    @param dataType?: string 为data值的类型，由于sessionStorage和localStorage只能存储文本，当data值不为文本时，本库将根据此dataType来序列化和反序列化，此默认值为"json"
+    @param expired?: string 为cache的过期时间
+        如果expired为一个数字描述，代表相对时间：
+            expired > 0 表示expired秒之后过期
+            expired = 0 表示立即过期，等于写入缓存无效
+            expired < 0 表示永不过期，除非缓存类型大生命周期结束
+        如果expired为一个标准的日期描述，即可以用JS内置的new Date(expired)转化为时间，则表示到了expired时间后过期
+    @param version?: string 为需要的版本验证，类似于http协议中的ETag。
+        如果一笔cache在有效期内，将直接命中并返回该笔cache
+        如果一笔cache已经失效：
+            如果这笔cache无version描述，则表示命中失败，取出来的cache为null
+            如果这笔cache有version描述，则表示该笔cache需要重新通过版本进行验证，验证结果有可能是not modified或是失效
+    @param encryption?: boolean 是否需要加密存储，如果为true，本库将调用Encryption.encrypt()或decrypt()方法加、解密之后再储存。
+        本库不直接提供加解密的实现，但提供接口：
+        interface IEncryption {
+            encrypt: (value: string) => string;
+            decrypt: (code: string) => string;
+        }
+        用户可自行引用第三方加解密库，如：google的CryptoJS，使用案例中有演示。
+        使用此参数前，用户需要先调用setConfig({encryption:myEncryption})设置加解密方法
     */
     constructor(data?: any, dataType?: string, expired?: string, version?: string, encryption?: boolean);
 }
 ```
 > 读取一笔cache，如var result = ptcache.getItem("list");
 ```
-    /*
-        @param key: string 要获取的缓存key
-        @param type?: CacheType 要从何种缓存池中获取，通常可不传，本库将按memoryStorage > sessionStorage > localStorage依次查找
-        @return CacheResult | null 返回为null表示未命中缓存，返回为CacheResult解释如下：
-            class CacheResult {
-                readonly value: string; //cache序列化后的原始值，为字符串
-                readonly version: string; //该cache的版本描述
-                readonly from: CacheType; //该cache来自于哪个类型，参见CacheType
-                toData(): any; //取出最终的cache值
-            }
-            从此可看出，getItem取出的cache并不是最终的缓存值，而是经过包装的CacheResult实例对象，调用此对象的toData()方法，才可以得到最终值。
-            如果CacheResult实例对象的version属性为空，表示该cache是有效的；反之，表示虽然命中的cache，但还不一定是最终有效，需要根据此version值确认
+/*
+@param key: string 要获取的缓存key
+@param type?: CacheType 要从何种缓存池中获取，通常可不传，本库将按memoryStorage > sessionStorage > localStorage依次查找
+@return CacheResult | null 返回为null表示未命中缓存，返回为CacheResult解释如下：
+    class CacheResult {
+        readonly value: string; //cache序列化后的原始值，为字符串
+        readonly version: string; //该cache的版本描述
+        readonly from: CacheType; //该cache来自于哪个类型，参见CacheType
+        toData(): any; //取出最终的cache值
+    }
+    从此可看出，getItem取出的cache并不是最终的缓存值，而是经过包装的CacheResult实例对象，调用此对象的toData()方法，才可以得到最终值。
+    如果CacheResult实例对象的version属性为空，表示该cache是有效的；反之，表示虽然命中的cache，但还不一定是最终有效，需要根据此version值确认
+*/
+function getItem(key: string, type?: CacheType): CacheResult | null;
+```
+> 更新一笔cache，如ptcache.setItem("list",new ptcache.CacheContent(null,null,100))
+
+本库不直接提供更新一笔cache的方法，用户可直接调用setItem重设即可；
+如果需要更新的仅仅是过期时间或是版本标识，不需要更新内容，在调用setItem方法的时候，new ptcache.CacheContent(data,dataType,expired,version,encryption),其中data,dataType传入null值即可；
+如 ptcache.setItem("list",new ptcache.CacheContent(null,null,100))，就表示将key为"list"的这笔cache往后增加100秒有效期
+
+> 删除一笔cache，如ptcache.removeItem("list");
+```
+/*
+    @param key: string 要删除的缓存key
+    @param type?: CacheType 要从何种缓存池中删除，通常可不传，本库将按memoryStorage > sessionStorage > localStorage依次查找
+*/
+function removeItem(key: string, type?: CacheType): void;
+```
+
+> 清空所有cache，如ptcache.clear(1);
+```
+/*
+    @param type?: CacheType 要清空何种缓存池，不传为清空所有三种缓存
+*/
+function clear(type?: CacheType): void;
+```
+
+> 与外部请求相结合，如ptcache.load({url:"xxx"}).then(function(data){...});
+```
+/*
+    @param requestOptions: IRequestOptions 发起外部请求的数据，该数据将传入第三方外部请求实现API:IRequest，进行外部请求
+        interface IRequestOptions {
+            url: string; //请求地址
+            method?: string; //方法，如"get","post","put","delete"
+            data?: { //请求参数
+                [key: string]: any;
+            };
+            render?(data: any): any; //对请求结果加工
+            headers: { //请求头设置
+                [key: string]: any;
+            };
+            version?: string; //版本验证
+        }
+    @param succss?: (data: any) => void 请求成功回调
+    @param fail?: (error: Error) => void) 请求失败回调
+    @return  Promise<any>
+*/
+function load(requestOptions: IRequestOptions, succss?: (data: any) => void, fail?: (error: Error) => void): Promise<any>;
+```
+注意：ptcache.load方法封装了ptcache.getItem方法，在发起外部请求之前，会查询缓存中是否存在以url为key的缓存，如果存在，则进一步验证version的有效性。如果验证有效，则不发起真实的外部请求，而返回cache值
+所以回调函数中接受的data: any，是最终的值，而非CacheResult实例对象。
+
+> config配置
+
+```
+function setConfig(options: {
+    namespace?: string; //在存入sessionStorage或是localStorage时，每一笔cache都会以此namespace为前缀，避免冲突
+    encryption?: IEncryption; // 加解密方法，由第三方库提供
+    mappingKey?: (key: string) => string; //每笔cache的key，可以经过此方法映射，比如以url为key进行写入会太长，可将url进行md5之后再作为key写入
+    /* 
+    由于sessionStorage或是localStorage只能储存文本，所以存入数据非文本时，将跟据dataType来调用此序列化方法进行序列化与反序列化
+    interface ISerialization {
+        decode: (str: string) => any;
+        encode: (data: any) => string;
+    }
+    本库默认提供一种ISerialization，名字为"json"
     */
-    function getItem(key: string, type?: CacheType): CacheResult | null;
+    serializations?: { 
+        string: ISerialization;
+    };
+    //外部请求的方法，由第三方库提供
+    request?: IRequest
+}): void;
 ```
