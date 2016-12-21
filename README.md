@@ -12,7 +12,8 @@ a shim library for operate browser storage
  H5提供由manifest指定的AppCache,可对站点文件的离线存储进行简单配制，使用场景很有限。  
  在实际开发中，我们经常需要可编程控制的数据级cache，基于H5为我们提供了*sessionStorage*和*locationStorage*，在此之上进行抽象与封装，因此产生了此框架。
 
- ## 更广泛的概念
+## 更广泛的概念
+
  我们假定缓存除了创建时设定的有效条件和周期，还存在不同类别的生命周期：
 - memoryStorage -- 存于内存中，即JS变量，刷新页面将消失
 - sessionStorage -- 存于浏览器sessionStorage中，关闭浏览器将消失
@@ -30,7 +31,7 @@ a shim library for operate browser storage
     2. 如果某一天需求变更为半小时拉取一次，我们又不得不翻出这段JS来更改
 - 如果使用pt-cache：
 
-    `
+    ```
     var ptcache = require("po-to/pt-cache");
 
     /* 假设我们有一个取数据的api接口，url是"xxx" */
@@ -49,9 +50,10 @@ a shim library for operate browser storage
     })
 
     /* 此时，api可输出一个自定义的X-Cache=r3600s，**r**表示该api输出的数据将缓存放入内存，**3600s**表示缓存1小时 */
-    `
+    ```
 
     这样一来：JS虽然每1秒会去拉取一次数据，但因为我们设定了X-Cache=r3600s的自定义http头，所以在1小时内，JS拉取的只是缓存在内存中的数据。对于前端来说，用一个通用的前后端协议即可简化并节省针对特定业务的编程。而且对于某些**高频的适时刷新**，访问内存或sessionStorage，远比访问浏览器XMLHttpRequest并命中http协议的cache要高性能得多
+
 ## 除此之外
 
 浏览器原生的memoryStorage、sessionStorage、locationStorage不提供缓存命中、失效、回收、溢出、加密机制，本库扩展了以上功能
@@ -66,7 +68,7 @@ a shim library for operate browser storage
 ## 依赖
 
 - 本库并不提供外部请求的具体实现，如ajax等，仅提供接口：
-·
+```
     interface IRequestOptions {
         url: string;
         method?: string;
@@ -79,15 +81,15 @@ a shim library for operate browser storage
     interface IRequest{
         (request: IRequestOptions,success:(data:RequestResult)=>void,fail:(error:Error)=>void) : void;
     }
-·  
+```  
 用户可自由引入第三方库，如jquery的$.ajax来封装实现以上接口
 
 - 本库并不限制自定义缓存头的具体实现，如借用http协议自定义头X-Cache等，仅提供接口：
-·
+```
     interface RequestResult {
         cache?: { type?: CacheType, expired?: string, version?: string, encryption?: boolean },
         notModified?: boolean,
         dataType: string,
         data: any
     }
-·
+```
