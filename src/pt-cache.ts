@@ -4,7 +4,7 @@
  * Licensed under the MIT license
  */
 
-export interface Encryption {
+export interface IEncryption {
     encrypt: (value: string) => string;
     decrypt: (code: string) => string;
 }
@@ -66,7 +66,7 @@ export function parseContent(contentType: string, content: string): any {
 }
 export class CacheContent {
     private _str: string;
-    constructor(public readonly data?: any, public readonly dataType?: string, public readonly expired?: string, public readonly version?: string, public readonly encryption?: boolean) {
+    constructor(public readonly data?: any, public readonly dataType: string = "json", public readonly expired?: string, public readonly version?: string, public readonly encryption?: boolean) {
 
     }
     toValue(): string {
@@ -430,10 +430,10 @@ pool[CacheType.Local] = new Shim(new StorageEntity(localStorage));
 
 export function setConfig(options: { 
     namespace?: string, 
-    encryption?: Encryption, 
+    encryption?: IEncryption, 
     mappingKey?: (key: string) => string, 
     serializations?:{string:Serialization},
-    request?: (requestOptions: IRequestOptions,success:(data:RequestResult)=>void,fail:(error:Error)=>void) => void,
+    request?: IRequest,
 }): void {
     if (options.namespace) {
         config.namespace = options.namespace;
@@ -511,7 +511,10 @@ export interface IRequestOptions {
     version?: string;
 }
 
-let request: (request: IRequestOptions,success:(data:RequestResult)=>void,fail:(error:Error)=>void) => void;
+export interface IRequest{
+    (request: IRequestOptions,success:(data:RequestResult)=>void,fail:(error:Error)=>void) : void;
+}
+let request: IRequest = function(request,success,fail){};
 
 export interface RequestResult {
     cache?: { type?: CacheType, expired?: string, version?: string, encryption?: boolean },
