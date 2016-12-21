@@ -7,7 +7,10 @@ a shim library for operate browser storage
 - 简介
 - 使用说明
 
+
 > 为方便描述说明，以下可能会使用typescript或es6的糖衣语法，实际使用本库时并不要求使用typescript或es6
+
+
 # 简介
  关于网页的cache，我们知道HTTP协议中处理缓存的机制一般有：Expires、Last-Modified、Etag等，由浏览器实现并封装，不可以编程方式访问。  
  H5提供由manifest指定的AppCache,可对站点文件的离线存储进行简单配制，使用场景很有限。  
@@ -22,7 +25,9 @@ a shim library for operate browser storage
 
 浏览器原生为我们维护了三种不同生命周期的cache，但是却不能在此基础上与缓存自身的周期设定取并集，以此来满足我们在实际开发中某些应用场景。比如：
 
->*最新列表*，需求希望页面刷新时拉取一次，其后每1小时自动拉取一次，而且点击“*立即更新*”的按钮，能立即拉取。
+
+> *最新列表*，需求希望页面刷新时拉取一次，其后每1小时自动拉取一次，而且点击“*立即更新*”的按钮，能立即拉取。
+
 
 - 如果使用http缓存：
     1. 最新列表不一定是一个独立的API接口。
@@ -67,6 +72,7 @@ a shim library for operate browser storage
 除localStorage外，如果需要可扩展至websql等本地数据库
 
 ## 安装
+
 > npm install @po-to/pt-cache --save-dev
 
 > define([ "@po-to/pt-cache" ],function( ptcache ){ ... });
@@ -102,7 +108,9 @@ a shim library for operate browser storage
 
 ## 举例说明
 
+
 >写入一笔cache，如：ptcache.setItem("list",new ptcache.CacheContent([...]))
+
 
 ```
 /*
@@ -170,11 +178,14 @@ function getItem(key: string, type?: CacheType): CacheResult | null;
 
 > 更新一笔cache，如ptcache.setItem("list",new ptcache.CacheContent(null,null,100))
 
+
 本库不直接提供更新一笔cache的方法，用户可直接调用setItem重设即可；
 如果需要更新的仅仅是过期时间或是版本标识，不需要更新内容，在调用setItem方法的时候，new ptcache.CacheContent(data,dataType,expired,version,encryption),其中data,dataType传入null值即可；
 如 ptcache.setItem("list",new ptcache.CacheContent(null,null,100))，就表示将key为"list"的这笔cache往后增加100秒有效期
 
+
 > 删除一笔cache，如ptcache.removeItem("list");
+
 
 ```
 /*
@@ -195,6 +206,7 @@ function clear(type?: CacheType): void;
 ```
 
 > 与外部请求相结合，如ptcache.load({url:"xxx"}).then(function(data){...});
+
 
 ```
 /*
@@ -220,7 +232,9 @@ function load(requestOptions: IRequestOptions, succss?: (data: any) => void, fai
 注意：ptcache.load方法封装了ptcache.getItem方法，在发起外部请求之前，会查询缓存中是否存在以url为key的缓存，如果存在，则进一步验证version的有效性。如果验证有效，则不发起真实的外部请求，而返回cache值
 所以回调函数中接受的data: any，是最终的值，而非CacheResult实例对象。
 
+
 > config配置，如ptcache.setConfig({namespace:"$#@"}})
+
 
 ```
 function setConfig(options: {
@@ -244,5 +258,6 @@ function setConfig(options: {
 ```
 
 > 外部请求推荐风格，仅推荐并不一定要求这样设计
+
 
 由server端输出一个自定义的responseHeader X-Cache,值为S,3600s,Wed Dec 21 2016 17:25:57，表示要将该数据放入sessionStorage中缓存，缓存有效期是3600秒，版本识别号为Wed Dec 21 2016 17:25:57，缓存到期后将version:Wed Dec 21 2016 17:25:57发送回server进行验证，如果无需更新，server可返回304,(Not Modified),并重新给该缓存增加有效期
