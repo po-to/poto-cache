@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="keywords" content="po-to,pt-cache,framework">
+    <meta name="description" content="po-to,pt-cache,framework">
+    <title>po-to/pt-cache</title>
+    <style>
+        dt{font-weight: bold;}
+        dd{background: #CCC;font-size: 16px;line-height: 1.5;}
+    </style>
+</head>
+
+<body>
+    <dl>
+        <dt><button data-case="1" type="button" class="case">运行</button> 简单的存储一笔数据，默认为内存存储，默认为永不过期</dt>
+        <dd>
+            <pre>
+                ptcache.setItem("list",new ptcache.CacheContent([1,2,3]));
+                console.log(ptcache.getItem("list"));
+            </pre>
+        </dd>
+        <dt><button data-case="2" type="button" class="case">运行</button> 存储一笔数据session型数据，10秒后过期（过期时间也可以是绝对日期如Wed Dec 21 2016 17:25:57），内容为{userName:"jimmy",userId:"1",nickname:"Knight"}</dt>
+        <dd>
+            <pre>
+                ptcache.setItem("user",new ptcache.CacheContent({userName:"jimmy",userId:"1",nickname:"Knight"},"json",10),1);
+                console.log(ptcache.getItem("user").toData());
+            </pre>
+        </dd>
+        <dt><button data-case="3" type="button" class="case">运行</button> 等待10秒后再次获取"user"缓存，看是否失效</dt>
+        <dd>
+            <pre>
+                console.log(ptcache.getItem("user"));
+            </pre>
+        </dd>
+        <dt><button data-case="4" type="button" class="case">运行</button> 存储一笔数据xml数据,10秒后过期,且带version标识：v0.1。在10秒有效期内，取出来的结果不带version标识，表示结果是有效的</dt>
+        <dd>
+            <pre>
+                /*
+                    本库内置了json和xml的序列化器，用户可扩展其它种类，也可以借此来实现服务端加密，客户端解密，将密文定义为某种数据类型即可
+                */
+                ptcache.setItem("doc",new ptcache.CacheContent("&lt;a&gt;test&lt;/a&gt;","xml",10,"v0.1"),1);
+                console.log(ptcache.getItem("doc"));
+                console.log(ptcache.getItem("doc").toData());
+            </pre>
+        </dd>
+        <dt><button data-case="5" type="button" class="case">运行</button> 等待10秒后再次获取"doc"缓存，返回结果带版本标识，表示该结果不一定有效，需要进一步做版本确认</dt>
+        <dd>
+            <pre>
+                console.log(ptcache.getItem("doc"));
+            </pre>
+        </dd>
+        <dt><button data-case="6" type="button" class="case">运行</button> 储存一笔加密数据，注意查看一下sessionStorage</dt>
+        <dd>
+            <pre>
+                /*
+                储存加密数据，必须自已引入第三方库，本例引入CryptoJS，并实现IEncryption接口
+                &lt;script src="libs/aes-pad-zero.js"&gt;&lt;/script&gt;
+                var idkey = 'dsfsdfsdfe';//key可由服务端返回
+                ptcache.setConfig({encryption:
+                    {
+                        encrypt : function(str){
+                            var key = idkey;
+                            var iv = key.substr(0,16);
+                            key = CryptoJS.enc.Utf8.parse(key);
+                            iv = CryptoJS.enc.Utf8.parse(iv);
+                            str = CryptoJS.AES.encrypt(str,key,{iv:iv,padding:CryptoJS.pad.ZeroPadding});
+                            return str.ciphertext.toString(CryptoJS.enc.Base64);
+                        },
+                        decrypt : function(str){
+                            var key = idkey;
+                            var iv = key.substr(0,16);
+                            key = CryptoJS.enc.Utf8.parse(key);
+                            iv = CryptoJS.enc.Utf8.parse(iv);
+                            str = CryptoJS.AES.decrypt(str,key,{iv:iv,padding:CryptoJS.pad.ZeroPadding});
+                            return CryptoJS.enc.Utf8.stringify(str);
+                        }
+                    }
+                });
+                */
+                ptcache.setItem("ciphertext",new ptcache.CacheContent([1,2,3],"json",-1,'',true),1);
+                console.log(ptcache.getItem("ciphertext"));
+            </pre>
+        </dd>
+        <dt><button data-case="7" type="button" class="case">运行</button> 配合发起外部请求，如：ajax，请求回来后，在10秒有效期内试试多次点击</dt>
+        <dd>
+            <pre>
+                /*
+                本库不提供外部请求的方法，必须自已引入第三方库，本例引入jquery.ajax，并实现IRequest接口
+                &lt;script src="libs/jquery.js"&gt;&lt;/script&gt;
+                因为要演示ajax，需要启用服务器，请运行npm run examples，或者自已将examples目录放入服务器环境下，为了简化演示，本例不设置http头，而用数据结构来模似：
+                {
+                    "responseHeaders":{"X-Cache":"1,10,aaa"},//表示将本返回数据放入sessionStorage，10秒过期，过期后使用aaa版本标识验证，类似于http Etag
+                    "responseBody" : [1,2,3]
+                }
+                缓存过期后，如果再次点击发起请求，本库会自动将版本标识aaa放入请求头X-Cache-Version中发回服务器，服务器可据此判断是否需要重新发送数据，如不需要，可返回304
+                */
+                ptcache.load({url:"ajax.json"}).then(function(data){
+                    console.log(data);
+                });
+            </pre>
+        </dd>
+    </dl>
+    <dt><button data-case="7" type="button" class="case">运行</button> 将examples文件夹下ajax-304.json改名为ajax.json试试模拟返回304</dt>
+        <dd>
+            <pre>
+                ptcache.load({url:"ajax.json"}).then(function(data){
+                    console.log(data);
+                });
+            </pre>
+        </dd>
+    </dl>
+    <script src="libs/config.js"></script>
+    <script src="libs/aes-pad-zero.js"></script>
+    <script data-main="main.js" src="libs/require.js"></script>
+</body>
+
+</html>

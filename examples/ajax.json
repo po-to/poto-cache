@@ -1,0 +1,4 @@
+{
+    "responseHeaders":{"X-Cache":"1,10,aaa"},
+    "responseBody" : [1,2,3]
+}

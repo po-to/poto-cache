@@ -3,9 +3,11 @@ a shim library for operate browser storage
 
 - 项目主页：[po-to.org/pt-cache](http://po-to.org/pt-cache)
 - 项目地址：[Github](https://github.com/po-to/pt-cache)
-- API文档： [查看文档](http://po-to.org/pt-cache/docs)
-- 简介
+- API文档： [在线文档](http://po-to.org/pt-cache/docs) 或见 /docs
+- 案例应用：[在线文档](http://po-to.org/pt-cache/examples) 或见 /examples
+- 概述简介
 - 使用说明
+
 
 
 > 为方便描述说明，以下可能会使用typescript或es6的糖衣语法，实际使用本库时并不要求使用typescript或es6
@@ -77,6 +79,18 @@ a shim library for operate browser storage
 
 > define([ "@po-to/pt-cache" ],function( ptcache ){ ... });
 
+## 目录结构
+
+> 源文件：./src， 案例：./examples， 文档：./docs
+
+## 编译
+
+> npm start
+
+## 运行案例
+
+> npm run examples
+
 ## 依赖
 
 - 本库并不限制自定义缓存头的具体实现，如借用http协议自定义头X-Cache等，仅提供接口：
@@ -98,6 +112,7 @@ a shim library for operate browser storage
         render?(data:any):any;
         headers:{[key:string]:any};
         version?: string;
+        timeout?: number;
     }
 
     interface IRequest{
@@ -278,6 +293,7 @@ function clear(type?: CacheType): void;
                 [key: string]: any;
             };
             version?: string; //版本验证
+            timeout?: number; //外部请求的超时时间
         }
     @param succss?: (data: any) => void 请求成功回调
     @param fail?: (error: Error) => void) 请求失败回调
@@ -288,7 +304,7 @@ function load(requestOptions: IRequestOptions, succss?: (data: any) => void, fai
 注意：ptcache.load方法封装了ptcache.getItem方法，在发起外部请求之前，会查询缓存中是否存在以url为key的缓存，如果存在，则进一步验证version的有效性。如果验证有效，则不发起真实的外部请求，而返回cache值
 所以回调函数中接受的data: any，是最终的值，而非CacheResult实例对象。
 
-外部请求，可由server端输出一个自定义的responseHeader X-Cache,值为S,3600s,Wed Dec 21 2016 17:25:57，表示要将该数据放入sessionStorage中缓存，缓存有效期是3600秒，版本识别号为Wed Dec 21 2016 17:25:57，缓存到期后将version:Wed Dec 21 2016 17:25:57发送回server进行验证，如果无需更新，server可返回304,(Not Modified),并重新给该缓存增加有效期
+外部请求，可由server端输出一个自定义的responseHeader X-Cache,值为"1,3600,Wed Dec 21 2016 17:25:57"，表示要将该数据放入sessionStorage中缓存，缓存有效期是3600秒，版本识别号为Wed Dec 21 2016 17:25:57，缓存到期后将version:Wed Dec 21 2016 17:25:57发送回server进行验证，如果无需更新，server可返回304,(Not Modified),并重新给该缓存增加有效期
 
 
 ### config配置
@@ -298,6 +314,7 @@ function load(requestOptions: IRequestOptions, succss?: (data: any) => void, fai
 ```
 function setConfig(options: {
     namespace?: string; //在存入sessionStorage或是localStorage时，每一笔cache都会以此namespace为前缀，避免冲突
+    ramStorageLimit?: number //内存型缓存最大占用内存空间，默认为0，表示无限制
     encryption?: IEncryption; // 加解密方法，由第三方库提供
     mappingKey?: (key: string) => string; //每笔cache的key，可以经过此方法映射，比如以url为key进行写入会太长，可将url进行md5之后再作为key写入
     /* 
@@ -321,7 +338,8 @@ function setConfig(options: {
 > 内部自动执行
 
 设置一笔缓存时，sessionStorage和localStorage在写满溢出时会抛出一个错误，本库会捕获这个错误，之后会采取回收策略  
-memoryStorage不会产生溢出错误，可自行设置一个存储上限值（本库会将所有写入memoryStorage的每笔cache的key，value长度求和，作为占用空间值），超过这个值后，本库会采取回收策略  
+memoryStorage不会产生溢出错误，可自行设置一个存储上限值（本库会将所有写入memoryStorage的每笔cache的key，value长度求和，作为占用空间值），超过这个值后，本库会采取回收策略。  
+用户可以通过setConfig({ramStorageLimit: 1024*20})来设置此值，由于js无法真正管理内存，所以此值单位为字符个数，并不精准  
 回收策略为：
 - 先将缓存池中所有失效的缓存清除，如果依然不够存储空间
 - 将缓存池中所有缓存按**访问时间**排序，回收较久没访问的冷门数据

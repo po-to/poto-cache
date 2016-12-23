@@ -3,7 +3,7 @@
         "module": "amd",
         "moduleResolution" : "node",
         "strictNullChecks" : true,
-        "removeComments" : true,
+        "removeComments" : false,
         "target": "es5",
         "lib": ["dom","es5","es2015.core","es2015.promise"],
         "declaration":true
