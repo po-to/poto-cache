@@ -96,7 +96,7 @@
                 }
                 缓存过期后，如果再次点击发起请求，本库会自动将版本标识aaa放入请求头X-Cache-Version中发回服务器，服务器可据此判断是否需要重新发送数据，如不需要，可返回304
                 */
-                ptcache.load({url:"ajax.json"}).then(function(data){
+                ptcache.load({url:"ajax.json",hideLoading:true}).then(function(data){
                     console.log(data);
                 });
             </pre>
@@ -105,8 +105,26 @@
     <dt><button data-case="7" type="button" class="case">运行</button> 将examples文件夹下ajax-304.json改名为ajax.json试试模拟返回304</dt>
         <dd>
             <pre>
-                ptcache.load({url:"ajax.json"}).then(function(data){
+                ptcache.load({url:"ajax.json",hideLoading:true}).then(function(data){
                     console.log(data);
+                });
+            </pre>
+        </dd>
+    </dl>
+    <dt><button data-case="8" type="button" class="case">运行</button> 配合@po-to/tomato.taskCounter实现异步计数</dt>
+        <dd>
+            <pre>
+                ptcache.setConfig({
+                    taskCounter: tomato.taskCounter
+                })
+                tomato.taskCounter.addListener(tomato.TaskCountEvent.Added, function (e) {
+                    console.log("Added");
+                }).addListener(tomato.TaskCountEvent.Completed, function (e) {
+                    console.log("Completed");
+                }).addListener(tomato.TaskCountEvent.Busy, function (e) {
+                    console.log("Busy");
+                }).addListener(tomato.TaskCountEvent.Free, function (e) {
+                    console.log("Free");
                 });
             </pre>
         </dd>

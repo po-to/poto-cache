@@ -1,27 +1,28 @@
 var DIST = "./";
 var SRC = "./src";
-
 var gulp = require("gulp");
 var runSequence = require('run-sequence');
 var ts = require("gulp-typescript");
-var tsProject = ts.createProject("tsconfig.json", {
-    //baseUrl: "/xampp/htdocs/typs/src/views",
-    //typeRoots: ["types"]
-});
+var tsProject = ts.createProject("tsconfig.json", {});
+var replace = require('gulp-replace');
 var merge = require("merge2");
 var typedoc = require("gulp-typedoc");
 var rename = require("gulp-rename");
 var uglify = require('gulp-uglify');
 var connect = require('gulp-connect');
 
+var copyright = '/*!\n * Copyright po-to.org All Rights Reserved.\n * https://github.com/po-to/\n * Licensed under the MIT license\n */\n';
 
 gulp.task("tsc", function () {
     var tsResult = gulp.src(SRC + "/**/*.ts")
         .pipe(tsProject())
     return merge([
-        tsResult.dts.pipe(gulp.dest(DIST)),
-        tsResult.js.pipe(gulp.dest(DIST))
+        tsResult.dts.pipe(replace(/([\s\S]*)/m, copyright+'$1'))
+        .pipe(gulp.dest(DIST)),
+        tsResult.js.pipe(replace(/([\s\S]*)/m, copyright+'$1'))
+        .pipe(gulp.dest(DIST))
         .pipe(uglify())
+        .pipe(replace(/([\s\S]*)/m, copyright+'$1'))
         .pipe(rename(function (path) {
             path.extname = ".min"+path.extname;
         }))
@@ -32,20 +33,14 @@ gulp.task("tsc", function () {
 gulp.task("tscdoc", function () {
     return gulp.src(SRC + "/**/*.ts")
         .pipe(typedoc({
-            // TypeScript options (see typescript docs) 
             module: "amd",
             target: "es6",
             includeDeclarations: false,
-            // Output options (see typedoc docs) 
             out: DIST + "/docs",
-            //json: "output/to/file.json",
-            // TypeDoc options (see typedoc docs)
             excludePrivate: true, 
             excludeExternals: true,
-            theme : "minimal",//minimal
             name: "@po-to/pt-cache",
             ignoreCompilerErrors: false,
-            version: true,
         }))
 });
 

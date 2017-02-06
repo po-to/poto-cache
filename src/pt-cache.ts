@@ -3,7 +3,15 @@
  * https://github.com/po-to/
  * Licensed under the MIT license
  */
-
+export interface ITaskCounter{
+    /**
+     * 如果要实现异步请求计数，请设置实现该接口的TaskCounter´.
+     * @param promise 异步请求返回的Promise对象
+     * @param note 异步请求的注解
+     */
+    addItem(promise:Promise<any>,note?:string):void;
+}
+let taskCounter:ITaskCounter;
 export interface IEncryption {
     encrypt: (value: string) => string;
     decrypt: (code: string) => string;
@@ -525,6 +533,8 @@ export function setConfig(options: {
     serializations?: { string: ISerialization },
     /** 外部请求的方法，由第三方库提供 */
     request?: IRequest,
+    /** 异步请求计数器，由第三方库提供 */
+    taskCounter?:ITaskCounter
 }): void {
     if (options.namespace) {
         config.namespace = options.namespace;
@@ -541,6 +551,9 @@ export function setConfig(options: {
     }
     if (options.request) {
         request = options.request;
+    }
+    if(options.taskCounter){
+        taskCounter = options.taskCounter;
     }
 }
 /**
@@ -638,11 +651,15 @@ export interface IRequestOptions {
     /** 外部请求返回数据的加工函数 */
     render?(data: any): any;
     /** 外部请求需要发送的headers */
-    headers: { [key: string]: any };
+    headers?: { [key: string]: any };
     /** 外部请求的版本标识 */
     version?: string;
     /** 外部请求的超时时间 */
     timeout?: number;
+    /** 加载信息说明 */
+    note?:string,
+    /** 如果设置了taskCounter，该参数控制是否将该请求加入异步计数器 */
+    hideLoading?:boolean
 }
 
 /**
@@ -677,7 +694,7 @@ export interface IRequestResult {
 * @param fail 请求失败回调
 */
 export function load(requestOptions: IRequestOptions, succss?: (data: any) => void, fail?: (error: Error) => void): Promise<any> {
-    return new Promise(function (resolve, reject) {
+    let promise = new Promise(function (resolve, reject) {
         let returnResult = function (data: any) {
             let result = requestOptions.render ? requestOptions.render(data) : data;
             if (result instanceof Error) {
@@ -728,6 +745,10 @@ export function load(requestOptions: IRequestOptions, succss?: (data: any) => vo
             }, returnResult)
         }
     })
+    if(!requestOptions.hideLoading && taskCounter){
+        taskCounter.addItem(promise,requestOptions.note);
+    }
+    return promise;
 }
 
 

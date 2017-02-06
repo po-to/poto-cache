@@ -3,6 +3,14 @@
  * https://github.com/po-to/
  * Licensed under the MIT license
  */
+export interface ITaskCounter {
+    /**
+     * 如果要实现异步请求计数，请设置实现该接口的TaskCounter´.
+     * @param promise 异步请求返回的Promise对象
+     * @param note 异步请求的注解
+     */
+    addItem(promise: Promise<any>, note?: string): void;
+}
 export interface IEncryption {
     encrypt: (value: string) => string;
     decrypt: (code: string) => string;
@@ -30,7 +38,6 @@ export declare class CacheResult {
     constructor(value: string, version: string, from: CacheType);
     toData(): any;
 }
-export declare function parseContent(contentType: string, content: string): any;
 export declare class CacheContent {
     readonly data: any;
     readonly dataType: string;
@@ -101,6 +108,8 @@ export declare function setConfig(options: {
     };
     /** 外部请求的方法，由第三方库提供 */
     request?: IRequest;
+    /** 异步请求计数器，由第三方库提供 */
+    taskCounter?: ITaskCounter;
 }): void;
 /**
  * 获取一笔缓存
@@ -153,11 +162,17 @@ export interface IRequestOptions {
     /** 外部请求返回数据的加工函数 */
     render?(data: any): any;
     /** 外部请求需要发送的headers */
-    headers: {
+    headers?: {
         [key: string]: any;
     };
     /** 外部请求的版本标识 */
     version?: string;
+    /** 外部请求的超时时间 */
+    timeout?: number;
+    /** 加载信息说明 */
+    note?: string;
+    /** 如果设置了taskCounter，该参数控制是否将该请求加入异步计数器 */
+    hideLoading?: boolean;
 }
 /**
  * 本库并不提供外部请求的具体实现，如ajax等，仅提供此接口，用户可自由引入第三方库，如jquery的$.ajax来封装实现此接口，调用：ptcache.setConfig({request:mRequest})来配置使用

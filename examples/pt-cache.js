@@ -5,6 +5,7 @@
  */
 define(["require", "exports"], function (require, exports) {
     "use strict";
+    var taskCounter;
     var CacheDataProps = ['cipher', 'expired', 'version', 'encryption', 'wtime', 'rtime'];
     var CacheOptionsProps = ['value', 'expired', 'version', 'encryption'];
     function nowTime() {
@@ -32,7 +33,6 @@ define(["require", "exports"], function (require, exports) {
         var serialization = config.serializations[contentType];
         return serialization ? serialization.decode(content) : content;
     }
-    exports.parseContent = parseContent;
     var CacheContent = (function () {
         /**
          * 写入的cache数据必须先由CacheContent包装
@@ -533,6 +533,9 @@ define(["require", "exports"], function (require, exports) {
         if (options.request) {
             request = options.request;
         }
+        if (options.taskCounter) {
+            taskCounter = options.taskCounter;
+        }
     }
     exports.setConfig = setConfig;
     /**
@@ -633,7 +636,7 @@ define(["require", "exports"], function (require, exports) {
     * @param fail 请求失败回调
     */
     function load(requestOptions, succss, fail) {
-        return new Promise(function (resolve, reject) {
+        var promise = new Promise(function (resolve, reject) {
             var returnResult = function (data) {
                 var result = requestOptions.render ? requestOptions.render(data) : data;
                 if (result instanceof Error) {
@@ -689,26 +692,10 @@ define(["require", "exports"], function (require, exports) {
                 }, returnResult);
             }
         });
+        if (!requestOptions.hideLoading && taskCounter) {
+            taskCounter.addItem(promise, requestOptions.note);
+        }
+        return promise;
     }
     exports.load = load;
 });
-// Cache.setConfig(encryption:
-//     {
-//         encode : function(str){
-//             var key = 'dsfsdfsdfe';
-//             var iv = key.substr(0,16);
-//             key = CryptoJS.enc.Utf8.parse(key);
-//             iv = CryptoJS.enc.Utf8.parse(iv);
-//             str = CryptoJS.AES.encrypt(str,key,{iv:iv,padding:CryptoJS.pad.ZeroPadding});
-//             return str.ciphertext.toString(CryptoJS.enc.Base64);
-//         },
-//         decode : function(str){
-//             var key = 'dsfsdfsdfe';
-//             var iv = key.substr(0,16);
-//             key = CryptoJS.enc.Utf8.parse(key);
-//             iv = CryptoJS.enc.Utf8.parse(iv);
-//             str = CryptoJS.AES.decrypt(str,key,{iv:iv,padding:CryptoJS.pad.ZeroPadding});
-//             return CryptoJS.enc.Utf8.stringify(str);
-//         }
-//     }
-// )

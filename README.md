@@ -171,6 +171,22 @@ a shim library for operate browser storage
     */
 ```
 
+- 由于本库提供load()方法集成代理外部请求，调用此方法前，可设置异步计数器ITaskCounter来实现异步请求计数，从而实现如全局loading等效果。发起一个异步请求：计数器+1；完成一个异步请求：计数器-1；    
+本库不直接提供计数器，仅提供接口ITaskCounter，调用load方法发起异步请求时，如果有设置TaskCounter，则会触发ITaskCounter.addItem方法，将异步清求的promise传入计数器
+```
+    /**
+     * 如果要实现异步请求计数，请设置实现该接口的TaskCounter´.
+     * @param promise 异步请求返回的Promise对象
+     * @param note 异步请求的注解
+     */
+    addItem(promise:Promise<any>,note?:string):void;
+    /*
+    比如，你如果使用@po-to/tomato库，可直接调用：ptcache.setConfig({
+        taskCounter: tomato.taskCounter
+    })
+    */
+```
+
 ## API说明
 
 
@@ -294,6 +310,8 @@ function clear(type?: CacheType): void;
             };
             version?: string; //版本验证
             timeout?: number; //外部请求的超时时间
+            note?:string; //加载信息说明
+            hideLoading?:boolean; //如果设置了taskCounter，该参数控制是否将该请求加入异步计数器
         }
     @param succss?: (data: any) => void 请求成功回调
     @param fail?: (error: Error) => void) 请求失败回调
