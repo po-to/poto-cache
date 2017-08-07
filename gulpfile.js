@@ -35,7 +35,7 @@ gulp.task("tscdoc", function () {
         .pipe(typedoc({
             module: "amd",
             target: "es6",
-            includeDeclarations: false,
+            includeDeclarations: true,
             out: DIST + "/docs",
             theme : "minimal",
             excludePrivate: true, 
@@ -54,7 +54,7 @@ gulp.task('examples', function () {
     });
 });
 
-gulp.task('bulid', function (callback) { runSequence(['tsc', 'tscdoc'] , callback) });
+gulp.task('bulid', function (callback) { runSequence(['tsc'] , callback) });
 
 gulp.task('default', ["bulid"]);
 

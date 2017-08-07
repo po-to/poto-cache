@@ -1,6 +1,6 @@
 {
   "name": "@po-to/poto-cache",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "a shim for operate browser cache",
   "homepage": "http://www.po-to.org",
   "main": "poto-cache.js",

@@ -26,21 +26,20 @@ sessionStorage、localStorage或者本地数据库
 # 文档
 [API](http://www.po-to.org/static/api/poto_cache)
 
-#设置
+# 设置
 poto-cache中的设置主要通过其对外函数setConfig()来实现：
-
-    ```
-	export declare function setConfig(options: {
-		namespace?: string;
-		ramStorageLimit?: number
-		encryption?: IEncryption;
-		mappingKey?: (key: string) => string;
-		serializations?: { 
-			string: ISerialization;
-		};
-		request?: IRequest
-	}): void;　　
-    ```
+```
+export declare function setConfig(options: {
+	namespace?: string;
+	ramStorageLimit?: number
+	encryption?: IEncryption;
+	mappingKey?: (key: string) => string;
+	serializations?: { 
+		string: ISerialization;
+	};
+	request?: IRequest
+}): void;　　
+```
 
 - namespace?: string;   
 在存入sessionStorage或是localStorage时，每一笔cache都会以此namespace为前缀，避免冲突
