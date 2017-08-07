@@ -37,10 +37,12 @@ gulp.task("tscdoc", function () {
             target: "es6",
             includeDeclarations: false,
             out: DIST + "/docs",
+            theme : "minimal",
             excludePrivate: true, 
             excludeExternals: true,
-            name: "@po-to/pt-cache",
+            name: "@po-to/poto-cache",
             ignoreCompilerErrors: false,
+            version: true,
         }))
 });
 

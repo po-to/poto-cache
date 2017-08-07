@@ -42,8 +42,8 @@ export declare class CacheContent {
     readonly data: any;
     readonly dataType: string;
     readonly expired: string;
-    readonly version: string;
-    readonly encryption: boolean;
+    readonly version: string | undefined;
+    readonly encryption: boolean | undefined;
     private _str;
     /**
      * 写入的cache数据必须先由CacheContent包装
@@ -75,7 +75,7 @@ export declare class CacheContent {
         用户可自行引用第三方加解密库，如：google的CryptoJS，使用案例中有演示
         使用此参数前，用户需要先调用setConfig({encryption:myEncryption})设置加解密方法
     */
-    constructor(data?: any, dataType?: string, expired?: string, version?: string, encryption?: boolean);
+    constructor(data?: any, dataType?: string, expired?: string, version?: string | undefined, encryption?: boolean | undefined);
     /**
      * @return 输出序列化后的文本
      */

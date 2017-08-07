@@ -1,10 +1,10 @@
 {
-  "name": "@po-to/pt-cache",
-  "version": "1.1.0",
+  "name": "@po-to/poto-cache",
+  "version": "0.1.0",
   "description": "a shim for operate browser cache",
-  "homepage": "http://po-to.org",
-  "main": "pt-cache.js",
-  "types": "pt-cache.d.ts",
+  "homepage": "http://www.po-to.org",
+  "main": "poto-cache.js",
+  "types": "poto-cache.d.ts",
   "scripts": {
     "start": "gulp",
     "examples": "gulp examples"
@@ -13,7 +13,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/po-to/pt-cache"
+    "url": "https://github.com/po-to/poto-cache"
   },
   "dependencies": {},
   "devDependencies": {
@@ -27,7 +27,7 @@
     "merge2": "^1.0.2",
     "pump": "^1.0.1",
     "run-sequence": "^1.2.2",
-    "typedoc": "^0.5.5",
-    "typescript": "^2.1.5"
+    "typedoc": "^0.7.1",
+    "typescript": "^2.1.4"
   }
 }

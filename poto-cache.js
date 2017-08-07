@@ -5,6 +5,7 @@
  */
 define(["require", "exports"], function (require, exports) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var taskCounter;
     var CacheDataProps = ['cipher', 'expired', 'version', 'encryption', 'wtime', 'rtime'];
     var CacheOptionsProps = ['value', 'expired', 'version', 'encryption'];
@@ -224,9 +225,9 @@ define(["require", "exports"], function (require, exports) {
         CacheItem.prototype.updateReadTime = function () {
             this.rtime = nowTime() + '';
         };
+        CacheItem.Props = ['_value', '_cipher', '_valid', '_checkValidTime', 'expired', 'version', 'encryption', 'wtime', 'rtime'];
         return CacheItem;
     }());
-    CacheItem.Props = ['_value', '_cipher', '_valid', '_checkValidTime', 'expired', 'version', 'encryption', 'wtime', 'rtime'];
     function assign(props, target) {
         var objs = [];
         for (var _i = 2; _i < arguments.length; _i++) {

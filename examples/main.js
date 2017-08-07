@@ -1,4 +1,4 @@
-define(["pt-cache", "tomato"], function (ptcache, tomato) {
+define(["poto-cache", "tomato"], function (ptcache, tomato) {
 	var idkey = 'dsfsdfsdfe';
 	ptcache.setConfig({
 		encryption:
